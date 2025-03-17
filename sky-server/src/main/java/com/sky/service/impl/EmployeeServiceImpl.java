@@ -1,16 +1,20 @@
 package com.sky.service.impl;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.constant.PasswordConstant;
 import com.sky.constant.StatusConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.EmployeeDTO;
 import com.sky.dto.EmployeeLoginDTO;
+import com.sky.dto.EmployeePageQueryDTO;
 import com.sky.entity.Employee;
 import com.sky.exception.AccountLockedException;
 import com.sky.exception.AccountNotFoundException;
 import com.sky.exception.PasswordErrorException;
 import com.sky.mapper.EmployeeMapper;
+import com.sky.result.PageResult;
 import com.sky.service.EmployeeService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +65,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employee;
     }
 
+    /**
+     * 新增员工账号
+     * @param employeeDTO
+     */
     @Override
     public void save(EmployeeDTO employeeDTO)  {
         Employee employee=new Employee();
@@ -84,5 +92,20 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setUpdateUser(empId);
 
         employeeMapper.insert(employee);
+    }
+
+    /**
+     * 分页查询员工表单
+     * @param employeePageQueryDTO
+     * @return
+     */
+    @Override
+    public PageResult queryByPage(EmployeePageQueryDTO employeePageQueryDTO) {
+        //通过pagehelper给mybatis自动添加查询范围
+        PageHelper.startPage(employeePageQueryDTO.getPage(),employeePageQueryDTO.getPageSize());
+
+      Page<Employee>pages = employeeMapper.pageQuery(employeePageQueryDTO);
+
+      return new PageResult(pages.getTotal(),pages.getResult());
     }
 }
