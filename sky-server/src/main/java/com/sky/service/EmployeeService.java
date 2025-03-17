@@ -41,4 +41,10 @@ public interface EmployeeService {
      * @return
      */
     Employee idQuery(Long id);
+
+    /**
+     * 编辑员工信息
+     * @param employeeDTO
+     */
+    void updateEmployeeInfo(EmployeeDTO employeeDTO);
 }

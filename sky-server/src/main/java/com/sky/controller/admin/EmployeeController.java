@@ -123,4 +123,16 @@ public class EmployeeController {
         Employee employee=employeeService.idQuery(id);
         return Result.success(employee);
     }
+
+    /**
+     * 编辑员工信息
+     * @param employeeDTO
+     * @return
+     */
+    @PutMapping
+    public Result updateEmployeeInfo(@RequestBody EmployeeDTO employeeDTO) {
+        log.info("更新{}号信息", employeeDTO.getId());
+        employeeService.updateEmployeeInfo(employeeDTO);
+        return Result.success();
+    }
 }
