@@ -131,6 +131,28 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Employee idQuery(Long id) {
         Employee employee=employeeMapper.getById(id);
+        employee.setPassword("*****");//将返回给前端的信息加密
         return employee;
+    }
+
+    /**
+     * 编辑员工信息
+     * @param employeeDTO
+     */
+    @Override
+    public void updateEmployeeInfo(EmployeeDTO employeeDTO) {
+        Employee employee=new Employee();
+
+        //将employeeDTO的信息复制给employee
+        BeanUtils.copyProperties(employeeDTO,employee);
+
+        //员工账号修改时间
+        employee.setUpdateTime(LocalDateTime.now());
+
+        //员工账号修改者的id
+        Long  empId = BaseContext.getCurrentId();
+        employee.setUpdateUser(empId);
+
+        employeeMapper.updateEmployee(employee);
     }
 }
