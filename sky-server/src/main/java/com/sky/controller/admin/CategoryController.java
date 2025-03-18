@@ -39,4 +39,16 @@ public class CategoryController {
         categoryService.enableOrDisable(status,id);
         return Result.success();
     }
+
+    /**
+     * 编辑分类信息
+     * @param categoryDTO
+     * @return
+     */
+    @PutMapping
+    public Result edit(@RequestBody CategoryDTO categoryDTO){
+        log.info("编辑{}",categoryDTO);
+        categoryService.edit(categoryDTO);
+        return Result.success();
+    }
 }

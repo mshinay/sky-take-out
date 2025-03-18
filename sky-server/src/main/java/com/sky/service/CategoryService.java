@@ -16,4 +16,10 @@ public interface CategoryService {
      * @param id
      */
     void enableOrDisable(Integer status, Long id);
+
+    /**
+     * 编辑分类信息
+     * @param categoryDTO
+     */
+    void edit(CategoryDTO categoryDTO);
 }
