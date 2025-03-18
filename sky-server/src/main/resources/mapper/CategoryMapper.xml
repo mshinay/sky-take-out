@@ -19,4 +19,20 @@
         </set>
         where id = #{id}
     </update>
+
+
+    <!-- 分类分页查询sql语句-->
+    <select id="pageQuery" resultType="com.sky.entity.Category">
+        select * from category
+        <where>
+            <if test="name != null and name != '' ">
+                AND name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="type != null and type != '' ">
+                AND type = #{type}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
 </mapper>

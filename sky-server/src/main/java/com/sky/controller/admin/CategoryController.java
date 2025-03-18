@@ -1,6 +1,9 @@
 package com.sky.controller.admin;
 
 import com.sky.dto.CategoryDTO;
+import com.sky.dto.CategoryPageQueryDTO;
+import com.sky.dto.EmployeePageQueryDTO;
+import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.CategoryService;
 import lombok.extern.slf4j.Slf4j;
@@ -50,5 +53,17 @@ public class CategoryController {
         log.info("编辑{}",categoryDTO);
         categoryService.edit(categoryDTO);
         return Result.success();
+    }
+
+    /**
+     * 分页查询
+     * @param categoryPageQueryDTO
+     * @return
+     */
+    @GetMapping("/page")
+    public Result<PageResult> pageQuery(CategoryPageQueryDTO categoryPageQueryDTO){
+        log.info("查询分类表{}", categoryPageQueryDTO);
+        PageResult results=categoryService.pageQuery(categoryPageQueryDTO);
+        return Result.success(results);
     }
 }

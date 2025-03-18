@@ -1,8 +1,13 @@
 package com.sky.service.impl;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.sky.dto.CategoryDTO;
+import com.sky.dto.CategoryPageQueryDTO;
 import com.sky.entity.Category;
+import com.sky.entity.Employee;
 import com.sky.mapper.CategoryMapper;
+import com.sky.result.PageResult;
 import com.sky.service.CategoryService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +57,21 @@ public class CategoryServicelmpl implements CategoryService {
         Category category = new Category();
         BeanUtils.copyProperties(categoryDTO,category);
         categoryMapper.update(category);
+    }
+
+    /**
+     * 分页查询
+     * @param categoryPageQueryDTO
+     * @return
+     */
+    @Override
+    public PageResult pageQuery(CategoryPageQueryDTO categoryPageQueryDTO) {
+        //通过pagehelper给mybatis自动添加查询范围
+        PageHelper.startPage(categoryPageQueryDTO.getPage(),categoryPageQueryDTO.getPageSize());
+
+        Page<Employee> pages = categoryMapper.pageQuery(categoryPageQueryDTO);
+
+        return new PageResult(pages.getTotal(),pages.getResult());
     }
 
 
