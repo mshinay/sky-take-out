@@ -43,5 +43,16 @@ public class CategoryServicelmpl implements CategoryService {
         categoryMapper.update(category);
     }
 
+    /**
+     * 编辑分类信息
+     * @param categoryDTO
+     */
+    @Override
+    public void edit(CategoryDTO categoryDTO) {
+        Category category = new Category();
+        BeanUtils.copyProperties(categoryDTO,category);
+        categoryMapper.update(category);
+    }
+
 
 }
