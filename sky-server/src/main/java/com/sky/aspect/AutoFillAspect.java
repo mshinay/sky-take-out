@@ -67,8 +67,8 @@ public class AutoFillAspect {
                 setCreateUser.invoke(clazz,currentId);
                 setUpdateUser.invoke(clazz,currentId);
             }else{//当sql操作为update时
-                Method setUpdateTime= clazz.getClass().getMethod(AutoFillConstant.SET_UPDATE_TIME);
-                Method setUpdateUser= clazz.getClass().getMethod(AutoFillConstant.SET_UPDATE_USER);
+                Method setUpdateTime= clazz.getClass().getMethod(AutoFillConstant.SET_UPDATE_TIME,LocalDateTime.class);
+                Method setUpdateUser= clazz.getClass().getMethod(AutoFillConstant.SET_UPDATE_USER,Long.class);
 
 
                 setUpdateTime.invoke(clazz,currentTime);

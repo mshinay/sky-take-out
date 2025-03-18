@@ -18,4 +18,11 @@ public interface CategoryMapper {
             "(#{type},#{name},#{sort},#{status},#{createTime},#{updateTime},#{createUser},#{updateUser})")
     @AutoFill(OperationType.INSERT)
     void insert(Category category);
+
+    /**
+     * 更新分类表信息
+     * @param category
+     */
+    @AutoFill(OperationType.UPDATE)
+    void update(Category category);
 }

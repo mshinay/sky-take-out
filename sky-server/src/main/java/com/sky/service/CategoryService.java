@@ -9,4 +9,11 @@ public interface CategoryService {
      * @param categoryDTO
      */
     void save(CategoryDTO categoryDTO);
+
+    /**
+     * 启用、禁用分类
+     * @param status
+     * @param id
+     */
+    void enableOrDisable(Integer status, Long id);
 }

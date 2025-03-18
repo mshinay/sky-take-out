@@ -28,4 +28,20 @@ public class CategoryServicelmpl implements CategoryService {
 
         categoryMapper.insert(category);
     }
+
+    /**
+     * 启用、禁用分类
+     * @param status
+     * @param id
+     */
+    @Override
+    public void enableOrDisable(Integer status, Long id) {
+        Category category = Category.builder()
+                .id(id)
+                .status(status)
+                .build();
+        categoryMapper.update(category);
+    }
+
+
 }
