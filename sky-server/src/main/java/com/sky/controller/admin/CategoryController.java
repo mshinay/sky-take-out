@@ -76,9 +76,21 @@ public class CategoryController {
      * @return
      */
     @GetMapping("/list")
-    public Result<List<Category>> queryByType(Integer type){
+    public Result<List<Category>> query(Integer type){
         log.info("根据类型查询{}",type);
-        List<Category> list =categoryService.queryByType(type);
+        List<Category> list =categoryService.query(type);
         return Result.success(list);
+    }
+
+    /**
+     * 根据id删除分类
+     * @param id
+     * @return
+     */
+    @DeleteMapping
+    public Result delete(Long id){
+        log.info("删除{}",id);
+        categoryService.delete(id);
+        return Result.success();
     }
 }
