@@ -13,6 +13,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CategoryServicelmpl implements CategoryService {
 
@@ -72,6 +74,16 @@ public class CategoryServicelmpl implements CategoryService {
         Page<Employee> pages = categoryMapper.pageQuery(categoryPageQueryDTO);
 
         return new PageResult(pages.getTotal(),pages.getResult());
+    }
+
+    /**
+     * 根据类型查询分类
+     * @param type
+     * @return
+     */
+    @Override
+    public List<Category> queryByType(Integer type) {
+        return categoryMapper.queryByType(type);
     }
 
 
