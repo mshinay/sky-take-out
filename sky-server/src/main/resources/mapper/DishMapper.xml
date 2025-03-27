@@ -2,6 +2,21 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--分页查询菜品-->
 <mapper namespace="com.sky.mapper.DishMapper">
-
+    <select id="pageQuery" resultType="com.sky.vo.DishVO">
+        select d.*, c.name as category_name from dish d left join category c on d.category_id = c.id
+        <where>
+            <if test="name != null and name != ''">
+                AND d.name LIKE CONCAT('%',#{name},'%')
+            </if>
+            <if test="status != null  ">
+                AND d.status = #{status}
+            </if>
+            <if test="categoryId != null ">
+                AND d.category_id = #{categoryId}
+            </if>
+        </where>
+        order by d.update_time DESC
+    </select>
 </mapper>

@@ -104,7 +104,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public PageResult queryByPage(EmployeePageQueryDTO employeePageQueryDTO) {
         //通过pagehelper给mybatis自动添加查询范围
         PageHelper.startPage(employeePageQueryDTO.getPage(),employeePageQueryDTO.getPageSize());
-
+        //Page<>是由pagehelper封装的返回集合
       Page<Employee>pages = employeeMapper.pageQuery(employeePageQueryDTO);
 
       return new PageResult(pages.getTotal(),pages.getResult());
