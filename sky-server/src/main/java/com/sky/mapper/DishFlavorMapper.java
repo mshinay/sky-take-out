@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.*;
 import java.util.List;
 
 @Mapper
-public interface DishFlaverMapper {
+public interface DishFlavorMapper {
 
     /**
      * 将相关菜品的味道插入到味道表单
@@ -20,4 +20,10 @@ public interface DishFlaverMapper {
      */
     @Delete("delete from dish_flavor where dish_id=#{dishId}")
     void deleteByDishId(Long dishId);
+
+    /**
+     * 根据菜品id批量删除口味
+     * @param dishIds
+     */
+    void deleteByDishIds(List<Long> dishIds);
 }

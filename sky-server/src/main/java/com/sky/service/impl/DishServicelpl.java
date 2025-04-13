@@ -7,10 +7,8 @@ import com.sky.constant.StatusConstant;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
-import com.sky.entity.Employee;
-import com.sky.entity.SetmealDish;
 import com.sky.exception.DeletionNotAllowedException;
-import com.sky.mapper.DishFlaverMapper;
+import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.StemealDishMapper;
 import com.sky.result.PageResult;
@@ -28,7 +26,7 @@ public class DishServicelpl implements DishService {
     @Autowired
     private DishMapper dishMapper;
     @Autowired
-    private DishFlaverMapper dishFlaverMapper;
+    private DishFlavorMapper dishFlaverMapper;
     @Autowired
     private StemealDishMapper setmealDishMapper;
     @Autowired
@@ -88,12 +86,14 @@ public class DishServicelpl implements DishService {
         }
 
         //删除菜品
-        for(Long id:ids){
-            dishMapper.deleteById(id);
-        }
         //删除菜品关联味道
-        for(Long id:ids){
+        /*for(Long id:ids){
+            dishMapper.deleteById(id);
             dishFlaverMapper.deleteByDishId(id);
-        }
+        }*/
+        dishMapper.deleteByIds(ids);
+        dishFlaverMapper.deleteByDishIds(ids);
+
+
     }
 }
