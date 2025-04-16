@@ -7,9 +7,6 @@ import com.sky.entity.Dish;
 import com.sky.enumeration.OperationType;
 import com.sky.vo.DishVO;
 import org.apache.ibatis.annotations.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-
 import java.util.List;
 
 @Mapper
@@ -60,4 +57,18 @@ public interface DishMapper {
      * @param ids
      */
     void deleteByIds(List<Long> ids);
+
+    /**
+     * 更新菜品信息
+     * @param dish
+     */
+    @AutoFill(OperationType.UPDATE)
+    void update(Dish dish);
+
+    /**
+     * 根据category_id查询菜品
+     * @param categoryId
+     * @return
+     */
+    List<Dish> queryByCategory(String categoryId);
 }

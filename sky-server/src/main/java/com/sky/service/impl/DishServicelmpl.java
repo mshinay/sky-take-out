@@ -7,10 +7,11 @@ import com.sky.constant.StatusConstant;
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
+import com.sky.entity.DishFlavor;
 import com.sky.exception.DeletionNotAllowedException;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
-import com.sky.mapper.StemealDishMapper;
+import com.sky.mapper.SetmealDishMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
@@ -22,15 +23,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class DishServicelpl implements DishService {
+public class DishServicelmpl implements DishService {
     @Autowired
     private DishMapper dishMapper;
     @Autowired
-    private DishFlavorMapper dishFlaverMapper;
+    private DishFlavorMapper dishFlavorMapper;
     @Autowired
-    private StemealDishMapper setmealDishMapper;
+    private SetmealDishMapper setmealDishMapper;
     @Autowired
-    private StemealDishMapper stemealDishMapper;
+    private SetmealDishMapper stemealDishMapper;
 
     /**
      * 新增菜品
@@ -43,10 +44,13 @@ public class DishServicelpl implements DishService {
         //插入菜品表单
         dishMapper.insert(dish);
         //插入味道表单
+        if(dishDTO.getFlavors()!=null&&dishDTO.getFlavors().size()>0){
         dishDTO.getFlavors().forEach(flavor -> {
             flavor.setDishId(dish.getId());
         });
-        dishFlaverMapper.insertWithDish(dishDTO.getFlavors());
+            dishFlavorMapper.insertWithDish(dishDTO.getFlavors());
+        }
+
     }
 
     /**
@@ -89,11 +93,55 @@ public class DishServicelpl implements DishService {
         //删除菜品关联味道
         /*for(Long id:ids){
             dishMapper.deleteById(id);
-            dishFlaverMapper.deleteByDishId(id);
+            dishFlavorMapper.deleteByDishId(id);
         }*/
         dishMapper.deleteByIds(ids);
-        dishFlaverMapper.deleteByDishIds(ids);
+        dishFlavorMapper.deleteByDishIds(ids);
 
 
+    }
+
+    /**
+     * 修改菜品信息
+     * @param dishDTO
+     */
+    @Override
+    public void updataDish(DishDTO dishDTO) {
+        Dish dish = new Dish();
+        //将DTO的属性复制给dish
+        BeanUtils.copyProperties(dishDTO, dish);
+        //修改菜品表信息
+        dishMapper.update(dish);
+        //修改菜品口味表信息
+        dishFlavorMapper.deleteByDishId(dish.getId());
+        if(dishDTO.getFlavors()!=null&&dishDTO.getFlavors().size()>0){
+        dishDTO.getFlavors().forEach(flavor -> {
+            flavor.setDishId(dishDTO.getId());
+        });
+            dishFlavorMapper.insertWithDish(dishDTO.getFlavors());
+        }
+
+    }
+
+    @Override
+    public DishVO getInfoById(Long id) {
+        DishVO dishVO = new DishVO();
+        Dish dish = dishMapper.selectById(id);
+        //把dish的数据复制给dishVO
+        BeanUtils.copyProperties(dish, dishVO);
+        List<DishFlavor> flavors=dishFlavorMapper.getByDishId(id);
+        dishVO.setFlavors(flavors);
+        return dishVO;
+    }
+
+    /**
+     * 通过分类id查询菜品
+     * @param categoryId
+     * @return
+     */
+    @Override
+    public List<Dish> queryByCategory(String categoryId) {
+        List<Dish> list = dishMapper.queryByCategory(categoryId);
+        return list;
     }
 }
