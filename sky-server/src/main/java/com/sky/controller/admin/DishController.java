@@ -8,6 +8,7 @@ import com.sky.service.DishService;
 import com.sky.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class DishController {
      * @return
      */
     @PostMapping
+    @CacheEvict(cacheNames = "dishByCategory", key = "#dishDTO.categoryId")
     public Result saveDish(@RequestBody DishDTO dishDTO) {
         log.info("新增菜品{}", dishDTO);
         dishService.saveDish(dishDTO);
@@ -50,6 +52,7 @@ public class DishController {
      * @return
      */
     @DeleteMapping
+    @CacheEvict(cacheNames = "dishByCategory", allEntries = true)
     public Result deleteDish(@RequestParam List<Long> ids) {
         log.info("删除菜品{}",ids);
         dishService.deleteDish(ids);
@@ -62,6 +65,7 @@ public class DishController {
      * @return
      */
     @PutMapping
+    @CacheEvict(cacheNames = "dishByCategory", allEntries = true)
     public Result updateDish(@RequestBody DishDTO dishDTO) {
         log.info("修改菜品{}", dishDTO);
         dishService.updataDish(dishDTO);

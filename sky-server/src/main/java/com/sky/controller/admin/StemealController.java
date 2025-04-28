@@ -8,6 +8,7 @@ import com.sky.service.SetmealService;
 import com.sky.vo.SetmealVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,6 +37,7 @@ public class StemealController {
      * @return
      */
     @PostMapping
+    @CacheEvict(cacheNames = "setmealByCategory", allEntries = true)
     public Result saveSetmeal(@RequestBody SetmealDTO setmealDTO) {
         log.info("新增套餐{}",setmealDTO);
         setmealService.saveSetmeal(setmealDTO);
@@ -60,6 +62,7 @@ public class StemealController {
      * @return
      */
     @PutMapping
+    @CacheEvict(cacheNames = "setmealByCategory", allEntries = true)
     public Result updateSetmeal(@RequestBody SetmealDTO setmealDTO) {
         log.info("修改菜品{}",setmealDTO);
         setmealService.updateSetmeal(setmealDTO);
