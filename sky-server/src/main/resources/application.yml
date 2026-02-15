@@ -29,8 +29,11 @@ logging:
     com:
       sky:
         mapper: debug
-        service: info
         controller: info
+        service: info
+
+
+
 
 sky:
   jwt:
