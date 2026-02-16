@@ -25,5 +25,6 @@ public class MessageConstant {
     public static final String ORDER_STATUS_ERROR = "订单状态错误";
     public static final String ORDER_NOT_FOUND = "订单不存在";
     public static final String ADDRESS_OUT_OF_RANGE = "收货地址超出配送范围，无法下单";
+    public static final String ORDER_TIMEOUT = "订单超时，自动取消";
 
 }

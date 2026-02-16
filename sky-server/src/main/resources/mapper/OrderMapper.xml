@@ -43,6 +43,22 @@
         where id = #{id}
     </update>
 
+    <update id="cancelTimeoutOrders">
+        update orders
+        set status = #{cancelledStatus},
+            cancel_reason = #{cancelReason},
+            cancel_time = #{cancelTime}
+        where status = #{pendingPaymentStatus}
+          and order_time &lt; #{timeoutTime}
+    </update>
+
+    <update id="completeDeliveryInProgressOrders">
+        update orders
+        set status = #{completedStatus},
+            delivery_time = #{deliveryTime}
+        where status = #{deliveryInProgressStatus}
+    </update>
+
     <select id="historyPageQuery" resultType="com.sky.entity.Orders">
         select * from orders
         <where>
