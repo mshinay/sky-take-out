@@ -10,9 +10,12 @@ import com.sky.dto.*;
 import com.sky.entity.*;
 import com.sky.exception.OrderBusinessException;
 import com.sky.mapper.*;
+import com.sky.properties.BaiduProperties;
+import com.sky.properties.ShopProperties;
 import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.service.ShoppingCartService;
+import com.sky.utils.HttpClientUtil;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
@@ -21,18 +24,23 @@ import com.sky.vo.OrderVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
 public class OrderServiceImpl implements OrderService {
+
+    private static final String BAIDU_GEOCODING_API = "https://api.map.baidu.com/geocoding/v3/";
+    private static final String BAIDU_DIRECTION_API = "https://api.map.baidu.com/directionlite/v1/riding";
+    private static final int MAX_DELIVERY_DISTANCE_METERS = 5000;
 
     @Autowired
     private OrderMapper orderMapper;
@@ -48,6 +56,11 @@ public class OrderServiceImpl implements OrderService {
     private WeChatPayUtil weChatPayUtil;
     @Autowired
     private ShoppingCartService shoppingCartService;
+    @Autowired
+    private ShopProperties shopProperties;
+    @Autowired
+    private BaiduProperties baiduProperties;
+
     /**
      * 提交订单
      * @param ordersSubmitDTO
@@ -62,6 +75,10 @@ public class OrderServiceImpl implements OrderService {
         if(addressBook == null){
             throw new RuntimeException(MessageConstant.ADDRESS_BOOK_IS_NULL);
         }
+
+        // 校验收货地址是否超出配送范围（5km），地图服务异常时降级放行
+        checkDeliveryRange(addressBook);
+
         //查看购物车是否为空
         ShoppingCart shoppingCart = ShoppingCart.builder()
                 .userId(BaseContext.getCurrentId())
@@ -461,6 +478,118 @@ public class OrderServiceImpl implements OrderService {
             sb.append(orderDetail.getName()+"*"+orderDetail.getNumber()+" ");
         }
         return sb.toString();
+    }
+
+    private void checkDeliveryRange(AddressBook addressBook) {
+        String shopAddress = shopProperties.getAddress();
+        String userAddress = getFullAddress(addressBook);
+        String ak = baiduProperties.getAk();
+
+        if (isBlank(shopAddress) || isBlank(userAddress) || isBlank(ak)) {
+            log.warn("配送距离校验配置不完整，降级放行下单。shopAddress={}, userAddressExists={}, akExists={}",
+                    shopAddress, !isBlank(userAddress), !isBlank(ak));
+            return;
+        }
+
+        try {
+            String shopLocation = geocoding(shopAddress, ak);
+            String userLocation = geocoding(userAddress, ak);
+            if (isBlank(shopLocation) || isBlank(userLocation)) {
+                log.warn("地址坐标解析失败，降级放行下单。shopLocation={}, userLocation={}", shopLocation, userLocation);
+                return;
+            }
+
+            Integer distance = getRidingDistance(shopLocation, userLocation, ak);
+            if (distance == null) {
+                log.warn("骑行距离获取失败，降级放行下单。shopLocation={}, userLocation={}", shopLocation, userLocation);
+                return;
+            }
+
+            if (distance > MAX_DELIVERY_DISTANCE_METERS) {
+                throw new OrderBusinessException(MessageConstant.ADDRESS_OUT_OF_RANGE);
+            }
+        } catch (OrderBusinessException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            log.warn("配送距离校验异常，降级放行下单。", ex);
+        }
+    }
+
+    private String geocoding(String address, String ak) {
+        Map<String, String> paramMap = new HashMap<>();
+        paramMap.put("address", address);
+        paramMap.put("output", "json");
+        paramMap.put("ak", ak);
+
+        String response = HttpClientUtil.doGet(BAIDU_GEOCODING_API, paramMap);
+        if (isBlank(response)) {
+            return null;
+        }
+
+        JSONObject jsonObject = JSONObject.parseObject(response);
+        if (jsonObject == null || jsonObject.getInteger("status") == null || jsonObject.getInteger("status") != 0) {
+            return null;
+        }
+
+        JSONObject result = jsonObject.getJSONObject("result");
+        if (result == null) {
+            return null;
+        }
+
+        JSONObject location = result.getJSONObject("location");
+        if (location == null) {
+            return null;
+        }
+
+        Double lat = location.getDouble("lat");
+        Double lng = location.getDouble("lng");
+        if (lat == null || lng == null) {
+            return null;
+        }
+        return lat + "," + lng;
+    }
+
+    private Integer getRidingDistance(String origin, String destination, String ak) {
+        Map<String, String> paramMap = new HashMap<>();
+        paramMap.put("origin", origin);
+        paramMap.put("destination", destination);
+        paramMap.put("ak", ak);
+
+        String response = HttpClientUtil.doGet(BAIDU_DIRECTION_API, paramMap);
+        if (isBlank(response)) {
+            return null;
+        }
+
+        JSONObject jsonObject = JSONObject.parseObject(response);
+        if (jsonObject == null || jsonObject.getInteger("status") == null || jsonObject.getInteger("status") != 0) {
+            return null;
+        }
+
+        JSONObject result = jsonObject.getJSONObject("result");
+        if (result == null || result.getJSONArray("routes") == null || result.getJSONArray("routes").isEmpty()) {
+            return null;
+        }
+
+        return result.getJSONArray("routes").getJSONObject(0).getInteger("distance");
+    }
+
+    private String getFullAddress(AddressBook addressBook) {
+        StringBuilder sb = new StringBuilder();
+        appendIfNotBlank(sb, addressBook.getProvinceName());
+        appendIfNotBlank(sb, addressBook.getCityName());
+        appendIfNotBlank(sb, addressBook.getDistrictName());
+        appendIfNotBlank(sb, addressBook.getDetail());
+        return sb.toString();
+    }
+
+    private void appendIfNotBlank(StringBuilder sb, String value) {
+        if (!isBlank(value)) {
+            sb.append(value);
+        }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
 
