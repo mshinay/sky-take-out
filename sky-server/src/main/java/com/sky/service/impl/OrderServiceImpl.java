@@ -21,6 +21,7 @@ import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import com.sky.websocket.WebSocketServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,8 @@ public class OrderServiceImpl implements OrderService {
     private static final String BAIDU_GEOCODING_API = "https://api.map.baidu.com/geocoding/v3/";
     private static final String BAIDU_DIRECTION_API = "https://api.map.baidu.com/directionlite/v1/riding";
     private static final int MAX_DELIVERY_DISTANCE_METERS = 5000;
+    private static final Integer ORDER_NOTIFY = 1;
+    private static final Integer ORDER_REMINDER = 2;
 
     @Autowired
     private OrderMapper orderMapper;
@@ -173,6 +176,12 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         orderMapper.update(orders);
+        String message = "订单号：" + outTradeNo;
+        Map<String, Object> map = new HashMap<>();
+        map.put("type", ORDER_NOTIFY);
+        map.put("orderId", ordersDB.getId());
+        map.put("content", message);
+        WebSocketServer.sendToAllClient(JSONObject.toJSONString(map));
     }
 
     /**
@@ -470,6 +479,34 @@ public class OrderServiceImpl implements OrderService {
         orders.setStatus(Orders.COMPLETED);
         orders.setDeliveryTime(LocalDateTime.now());
         orderMapper.update(orders);
+    }
+
+    /**
+     * 用户催单
+     * @param id
+     */
+    @Override
+    public void reminder(Long id) {
+        //获取订单信息
+        Orders orderDB = orderMapper.getById(id);
+        //非空判断
+        if(orderDB == null){
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        //校验订单是否属于当前用户
+        if(!orderDB.getUserId().equals(BaseContext.getCurrentId())){
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+        //订单状态 2待接单 3已接单 4派送中允许催单
+        if(orderDB.getStatus() < Orders.TO_BE_CONFIRMED || orderDB.getStatus() > Orders.DELIVERY_IN_PROGRESS){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        String message = "订单号：" + orderDB.getNumber();
+        Map<String, Object> map = new HashMap<>();
+        map.put("type", ORDER_REMINDER);
+        map.put("orderId", orderDB.getId());
+        map.put("content", message);
+        WebSocketServer.sendToAllClient(JSONObject.toJSONString(map));
     }
 
     private String ordersDetailList(List<OrderDetail> orderDetailList) {

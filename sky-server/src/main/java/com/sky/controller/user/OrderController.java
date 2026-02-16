@@ -105,4 +105,16 @@ public class OrderController {
         orderService.repeatOrder(id);
         return Result.success();
     }
+
+    /**
+     * 催单
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/reminder/{id}", method = {RequestMethod.GET, RequestMethod.PUT})
+    public Result reminder(@PathVariable Long id){
+        log.info("催单{}", id);
+        orderService.reminder(id);
+        return Result.success();
+    }
 }
