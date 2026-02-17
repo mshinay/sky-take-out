@@ -83,4 +83,15 @@
         </where>
         order by order_time  desc
     </select>
+
+    <select id="getTurnoverStatistics" resultType="java.util.Map">
+        select date(order_time) as orderDate,
+               ifnull(sum(amount), 0) as turnover
+        from orders
+        where status = #{status}
+          and order_time &gt;= #{beginTime}
+          and order_time &lt; #{endTime}
+        group by date(order_time)
+        order by orderDate
+    </select>
 </mapper>

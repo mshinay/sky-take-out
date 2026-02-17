@@ -10,6 +10,8 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.List;
 
 @Mapper
 public interface OrderMapper {
@@ -79,4 +81,15 @@ public interface OrderMapper {
     Integer completeDeliveryInProgressOrders(@Param("deliveryInProgressStatus") Integer deliveryInProgressStatus,
                                              @Param("completedStatus") Integer completedStatus,
                                              @Param("deliveryTime") LocalDateTime deliveryTime);
+
+    /**
+     * 按天统计营业额
+     * @param beginTime 开始时间（含）
+     * @param endTime 结束时间（不含）
+     * @param status 订单状态
+     * @return 日期和营业额列表
+     */
+    List<Map<String, Object>> getTurnoverStatistics(@Param("beginTime") LocalDateTime beginTime,
+                                                    @Param("endTime") LocalDateTime endTime,
+                                                    @Param("status") Integer status);
 }
