@@ -92,4 +92,15 @@ public interface OrderMapper {
     List<Map<String, Object>> getTurnoverStatistics(@Param("beginTime") LocalDateTime beginTime,
                                                     @Param("endTime") LocalDateTime endTime,
                                                     @Param("status") Integer status);
+
+    /**
+     * 按天统计订单总数和有效订单数
+     * @param beginTime 开始时间（含）
+     * @param endTime 结束时间（不含）
+     * @param validStatus 有效订单状态
+     * @return 日期和订单统计列表
+     */
+    List<Map<String, Object>> getOrderStatistics(@Param("beginTime") LocalDateTime beginTime,
+                                                 @Param("endTime") LocalDateTime endTime,
+                                                 @Param("validStatus") Integer validStatus);
 }

@@ -4,6 +4,7 @@ import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
+import com.sky.vo.OrderReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,6 +106,59 @@ public class ReportServiceImpl implements ReportService {
                 .dateList(String.join(",", dateList))
                 .totalUserList(String.join(",", totalUserList))
                 .newUserList(String.join(",", newUserList))
+                .build();
+    }
+
+    @Override
+    public OrderReportVO ordersStatistics(LocalDate begin, LocalDate end) {
+        if (begin == null || end == null || begin.isAfter(end)) {
+            return OrderReportVO.builder()
+                    .dateList("")
+                    .orderCountList("")
+                    .validOrderCountList("")
+                    .totalOrderCount(0)
+                    .validOrderCount(0)
+                    .orderCompletionRate(0.0)
+                    .build();
+        }
+
+        LocalDateTime beginTime = begin.atStartOfDay();
+        LocalDateTime endTime = end.plusDays(1).atStartOfDay();
+        List<Map<String, Object>> orderData = orderMapper.getOrderStatistics(beginTime, endTime, Orders.COMPLETED);
+
+        Map<LocalDate, Integer> orderCountMap = new HashMap<>();
+        Map<LocalDate, Integer> validOrderCountMap = new HashMap<>();
+        for (Map<String, Object> row : orderData) {
+            LocalDate date = parseDate(row.get("orderDate"));
+            if (date != null) {
+                orderCountMap.put(date, parseInteger(row.get("orderCount")));
+                validOrderCountMap.put(date, parseInteger(row.get("validOrderCount")));
+            }
+        }
+
+        List<String> dateList = new ArrayList<>();
+        List<String> orderCountList = new ArrayList<>();
+        List<String> validOrderCountList = new ArrayList<>();
+        int totalOrderCount = 0;
+        int validOrderCount = 0;
+        for (LocalDate date = begin; !date.isAfter(end); date = date.plusDays(1)) {
+            int orderCount = orderCountMap.getOrDefault(date, 0);
+            int validCount = validOrderCountMap.getOrDefault(date, 0);
+            totalOrderCount += orderCount;
+            validOrderCount += validCount;
+            dateList.add(date.format(OUTPUT_DATE_FORMATTER));
+            orderCountList.add(String.valueOf(orderCount));
+            validOrderCountList.add(String.valueOf(validCount));
+        }
+
+        double completionRate = totalOrderCount == 0 ? 0.0 : (double) validOrderCount / totalOrderCount;
+        return OrderReportVO.builder()
+                .dateList(String.join(",", dateList))
+                .orderCountList(String.join(",", orderCountList))
+                .validOrderCountList(String.join(",", validOrderCountList))
+                .totalOrderCount(totalOrderCount)
+                .validOrderCount(validOrderCount)
+                .orderCompletionRate(completionRate)
                 .build();
     }
 
