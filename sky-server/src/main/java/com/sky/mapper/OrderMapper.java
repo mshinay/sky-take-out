@@ -103,4 +103,18 @@ public interface OrderMapper {
     List<Map<String, Object>> getOrderStatistics(@Param("beginTime") LocalDateTime beginTime,
                                                  @Param("endTime") LocalDateTime endTime,
                                                  @Param("validStatus") Integer validStatus);
+
+    /**
+     * 根据动态条件统计订单数量
+     * @param map 查询条件
+     * @return 订单数量
+     */
+    Integer countByMap(Map<String, Object> map);
+
+    /**
+     * 根据动态条件汇总营业额
+     * @param map 查询条件
+     * @return 营业额
+     */
+    Double sumByMap(Map<String, Object> map);
 }

@@ -306,12 +306,16 @@ public class OrderServiceImpl implements OrderService {
     public OrderStatisticsVO statistics() {
         //订单状态 1待付款 2待接单 3已接单 4派送中 5已完成 6已取消
         Integer toBeConfirmed = orderMapper.count(2);
+        Integer confirmed = orderMapper.count(3);
         Integer deliveryInProgress = orderMapper.count(4);
-        Integer confirmed = orderMapper.count(5);
+        Integer completed = orderMapper.count(5);
+        Integer cancelled = orderMapper.count(6);
         OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
-        orderStatisticsVO.setConfirmed(toBeConfirmed);
-        orderStatisticsVO.setDeliveryInProgress(deliveryInProgress);
+        orderStatisticsVO.setToBeConfirmed(toBeConfirmed);
         orderStatisticsVO.setConfirmed(confirmed);
+        orderStatisticsVO.setDeliveryInProgress(deliveryInProgress);
+        orderStatisticsVO.setCompleted(completed);
+        orderStatisticsVO.setCancelled(cancelled);
         return orderStatisticsVO;
 
     }

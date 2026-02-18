@@ -53,4 +53,11 @@ public interface UserMapper {
      */
     List<Map<String, Object>> getNewUserStatistics(@Param("beginTime") LocalDateTime beginTime,
                                                    @Param("endTime") LocalDateTime endTime);
+
+    /**
+     * 根据动态条件统计用户数量
+     * @param map 查询条件
+     * @return 用户数量
+     */
+    Integer countByMap(Map<String, Object> map);
 }

@@ -75,10 +75,24 @@
                 and status = #{status}
             </if>
             <if test="beginTime != null">
-                and order_time &gt;= #{beginTime}
+                <choose>
+                    <when test="status != null and status == 6">
+                        and cancel_time &gt;= #{beginTime}
+                    </when>
+                    <otherwise>
+                        and order_time &gt;= #{beginTime}
+                    </otherwise>
+                </choose>
             </if>
             <if test="endTime != null">
-                and order_time &lt;= #{endTime}
+                <choose>
+                    <when test="status != null and status == 6">
+                        and cancel_time &lt;= #{endTime}
+                    </when>
+                    <otherwise>
+                        and order_time &lt;= #{endTime}
+                    </otherwise>
+                </choose>
             </if>
         </where>
         order by order_time  desc
@@ -104,5 +118,37 @@
           and order_time &lt; #{endTime}
         group by date(order_time)
         order by orderDate
+    </select>
+
+    <select id="countByMap" resultType="java.lang.Integer">
+        select count(id)
+        from orders
+        <where>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="begin != null">
+                and order_time &gt;= #{begin}
+            </if>
+            <if test="end != null">
+                and order_time &lt;= #{end}
+            </if>
+        </where>
+    </select>
+
+    <select id="sumByMap" resultType="java.lang.Double">
+        select sum(amount)
+        from orders
+        <where>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="begin != null">
+                and order_time &gt;= #{begin}
+            </if>
+            <if test="end != null">
+                and order_time &lt;= #{end}
+            </if>
+        </where>
     </select>
 </mapper>
