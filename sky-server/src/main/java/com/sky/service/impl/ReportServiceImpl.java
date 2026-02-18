@@ -1,10 +1,13 @@
 package com.sky.service.impl;
 
 import com.sky.entity.Orders;
+import com.sky.dto.GoodsSalesDTO;
+import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
+import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +31,8 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private OrderMapper orderMapper;
+    @Autowired
+    private OrderDetailMapper orderDetailMapper;
     @Autowired
     private UserMapper userMapper;
 
@@ -159,6 +164,38 @@ public class ReportServiceImpl implements ReportService {
                 .totalOrderCount(totalOrderCount)
                 .validOrderCount(validOrderCount)
                 .orderCompletionRate(completionRate)
+                .build();
+    }
+
+    @Override
+    public SalesTop10ReportVO salesTop10(LocalDate begin, LocalDate end) {
+        if (begin == null || end == null || begin.isAfter(end)) {
+            return SalesTop10ReportVO.builder()
+                    .nameList("")
+                    .numberList("")
+                    .build();
+        }
+
+        LocalDateTime beginTime = begin.atStartOfDay();
+        LocalDateTime endTime = end.plusDays(1).atStartOfDay();
+        List<GoodsSalesDTO> goodsSalesDTOS = orderDetailMapper.getSalesTop10(beginTime, endTime, Orders.COMPLETED);
+        if (goodsSalesDTOS == null || goodsSalesDTOS.isEmpty()) {
+            return SalesTop10ReportVO.builder()
+                    .nameList("")
+                    .numberList("")
+                    .build();
+        }
+
+        List<String> nameList = new ArrayList<>();
+        List<String> numberList = new ArrayList<>();
+        for (GoodsSalesDTO goodsSalesDTO : goodsSalesDTOS) {
+            nameList.add(goodsSalesDTO.getName());
+            numberList.add(String.valueOf(goodsSalesDTO.getNumber()));
+        }
+
+        return SalesTop10ReportVO.builder()
+                .nameList(String.join(",", nameList))
+                .numberList(String.join(",", numberList))
                 .build();
     }
 
